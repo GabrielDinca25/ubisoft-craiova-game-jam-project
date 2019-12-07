@@ -16,22 +16,22 @@ public class PlayerZeroGMovement : MonoBehaviour
     private Rigidbody2D rb2d;
     public Vector3 force;
 
-    //private float minX =  0f;
-    //private float maxX = 10f;
-    //private float minY = -2f;
-    //private float maxY =  4f;
+    private float minX = 0f;
+    private float maxX = 10f;
+    private float minY = -4f;
+    private float maxY = 4f;
 
     private void Awake()
     {
         rb2d = GetComponent<Rigidbody2D>();
 
-        //float screenHeight = Screen.height;
-        //float screenWidth = Screen.width;
+        float screenHeight = Screen.height;
+        float screenWidth = Screen.width;
 
-        //minY *= screenHeight / 1080;
-        //maxY *= screenHeight / 1080;
-        //minX *= screenWidth / 1920;
-        //maxX *= screenWidth / 1920;
+        minY *= screenHeight / 1080;
+        maxY *= screenHeight / 1080;
+        minX *= screenWidth / 1920;
+        maxX *= screenWidth / 1920;
     }
 
     void Update()
@@ -60,8 +60,8 @@ public class PlayerZeroGMovement : MonoBehaviour
     private void ClampPlayer()
     {
         Vector3 pos = transform.position;
-        pos.x = Mathf.Clamp(transform.position.x, -2.0f, 6.0f);
-        pos.y = Mathf.Clamp(transform.position.y, -2.0f, 4.0f);
+        pos.x = Mathf.Clamp(transform.position.x, minX, maxX);
+        pos.y = Mathf.Clamp(transform.position.y, minY, maxX);
         transform.position = pos;
     }
 
@@ -112,13 +112,11 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float rotationSteepSpeed;
     private void RotateToTarget()
     {
-        //Debug.Log(lastAngle + "last angle");
         _goPosition = (Vector2)transform.position + (Vector2)force;
 
         var dir = _goPosition - rb2d.position;
         var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 180;
 
-        //Debug.Log("angle " + angle);
         if (angle > 170 && angle < 190)
         {
             return;

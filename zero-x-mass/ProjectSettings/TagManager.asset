@@ -44,7 +44,7 @@ TagManager:
   - name: Player
     uniqueID: 3606314395
     locked: 0
-  - name: Enem
+  - name: Enemy
     uniqueID: 1809496795
     locked: 0
   - name: Background

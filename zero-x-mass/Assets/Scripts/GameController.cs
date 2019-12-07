@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour
     public bool gravity;
 
 
+
     void Awake()
     {
         if (instance == null)
@@ -63,23 +64,25 @@ public class GameController : MonoBehaviour
             playerRb2d.velocity = new Vector2(0, -1.8f);
             playerTransform.rotation = Quaternion.identity;
 
-            player.GetComponent<BoxCollider2D>().enabled    = false;
-            player.GetComponent<CircleCollider2D>().enabled = true;
+            player.GetComponentInChildren<BoxCollider2D>().enabled    = false;
+            player.GetComponentInChildren<CircleCollider2D>().enabled = true;
         }
         else
         {
             playerRb2d.isKinematic     = true;
-            player.GetComponent<PlayerZeroGMovement>().enabled = true;
-            player.GetComponent<PlayerMovement>().enabled      = false;
+            player.GetComponentInChildren<PlayerZeroGMovement>().enabled = true;
+            player.GetComponentInChildren<PlayerMovement>().enabled      = false;
             playerAnim.SetBool("walking", false);
             playerAnim.SetBool("flying" , true);
             playerDust.SetActive(true);
 
             playerRb2d.velocity = new Vector2(0, 1f);
 
-            player.GetComponent<CircleCollider2D>().enabled = false;
-            player.GetComponent<BoxCollider2D>().enabled    = true;
+            player.GetComponentInChildren<CircleCollider2D>().enabled = false;
+            player.GetComponentInChildren<BoxCollider2D>().enabled    = true;
+
         }
+        ObjectsManager.instance.ChangeMovement();
     }
 
 }

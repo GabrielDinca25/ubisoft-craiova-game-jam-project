@@ -42,11 +42,6 @@ public class PlayerMovement : MonoBehaviour
             EndMovement();
             return;
         }
-        else if (Input.GetMouseButton(0))
-        {
-            _CheckTap();
-        }
-
 
         ClampPlayer();
     }
@@ -82,18 +77,14 @@ public class PlayerMovement : MonoBehaviour
         _movementStartPosition = cam.ScreenToWorldPoint(mousePosition);
         _movementCurrentPosition = _movementStartPosition;
         SetMoving();
-        Invoke("CheckTap", 0.1f);
     }
 
     private void EndMovement()
     {
+        CheckTap();
         CancelInvoke("SetMoving");
         moving = false;
         rb2d.velocity = new Vector2(0, rb2d.velocity.y);
-        if (tap)
-        {
-            Tap();
-        }
     }
 
  
@@ -123,19 +114,19 @@ public class PlayerMovement : MonoBehaviour
 
     private void Tap()
     {
-        tap = false;
-        CancelInvoke("CheckTap");
-        if (jumpCount > 2)
+        if (jumpCount > 1)
         {
             canJump = false;
             return;
         }
-        jump = true;
         jumpCount += 1;
+        jump = true;
     }
 
     private void CheckTap()
     {
+        Debug.Log(_movementCurrentPosition + "current");
+        Debug.Log(_movementStartPosition + "start");
         if (_movementCurrentPosition == _movementStartPosition)
         {
             Tap();
@@ -156,12 +147,13 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         jump = false;
+        //GameController.instance.scrollSpeed *= 1.25f;
         rb2d.velocity = new Vector2(rb2d.velocity.x, jumpVelocity);
     }
 
     private void BetterJump()
     {
-        if (rb2d.velocity.y > 0 && moving)
+        if (rb2d.velocity.y > 0)
         {
             rb2d.gravityScale = lowJumpMultiplier;
         }else
@@ -172,7 +164,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckGround()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.9f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.85f, groundLayer);
         if (hit.collider != null)
         {
             canJump = true;
