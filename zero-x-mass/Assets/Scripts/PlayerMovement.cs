@@ -5,20 +5,30 @@ public class PlayerMovement : MonoBehaviour
 
     public bool moving;
     public bool jump;
-    //public bool tap;
+    public bool tap;
 
     public Vector3 _movementStartPosition;
     public Vector3 _movementCurrentPosition;
     public Vector3 _lastdirection;
 
-
     public Camera cam;
     private Rigidbody2D rb2d;
+    public Vector3 force;
 
+    [Header("Jumping")]
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 2f;
+    public float jumpVelocity;
+    public int jumpCount;
+    public bool canJump;
 
+    [Header("GroundCheck")]
+    public LayerMask groundLayer;
     private void Awake()
     {
         rb2d = GetComponent<Rigidbody2D>();
+        canJump = false;
+        jumpCount = 0;
     }
 
     void Update()
@@ -32,11 +42,10 @@ public class PlayerMovement : MonoBehaviour
             EndMovement();
             return;
         }
-        //else if (Input.GetMouseButton(0))
-        //{
-        //    _CheckTap();
-        //    _CheckJump();
-        //}
+        else if (Input.GetMouseButton(0))
+        {
+            _CheckTap();
+        }
 
 
         ClampPlayer();
@@ -49,12 +58,13 @@ public class PlayerMovement : MonoBehaviour
             Move();
         }
 
-        if (jump)
+        if (jump && canJump)
         {
             Jump();
         }
 
         BetterJump();
+        CheckGround();
     }
 
     private void ClampPlayer()
@@ -67,27 +77,26 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartMovement()
     {
-        //tap = true;
-        Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
+        tap = true;
+        Vector3 mousePosition = new Vector3(Input.mousePosition.x, 0, 10);
         _movementStartPosition = cam.ScreenToWorldPoint(mousePosition);
         _movementCurrentPosition = _movementStartPosition;
-        //Invoke("SetMoving", 0.1f);
         SetMoving();
+        Invoke("CheckTap", 0.1f);
     }
 
     private void EndMovement()
     {
         CancelInvoke("SetMoving");
         moving = false;
-        rb2d.velocity = Vector3.zero;
-
-        Vector3 test = new Vector3(Random.Range(0f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
-        rb2d.velocity = test;
-        //if (tap)
-        //{
-        //    //just in case Dash();
-        //}
+        rb2d.velocity = new Vector2(0, rb2d.velocity.y);
+        if (tap)
+        {
+            Tap();
+        }
     }
+
+ 
 
     private void SetMoving()
     {
@@ -96,33 +105,78 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
+        Vector3 mousePosition = new Vector3(Input.mousePosition.x, 0, 10);
         _movementCurrentPosition = cam.ScreenToWorldPoint(mousePosition);
 
-
-
         Vector3 force = _movementStartPosition - _movementCurrentPosition;
-        if(Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x) 
-        || Mathf.Abs(force.y) < Mathf.Abs(_lastdirection.y))
+        if (Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x))
         {
             rb2d.velocity = Vector3.zero;
             _movementStartPosition = _movementCurrentPosition;
             force = _movementStartPosition - _movementCurrentPosition;
         }
-        
-        rb2d.velocity = -force * GameController.instance.playerSpeed * Time.fixedDeltaTime;
+
+        rb2d.velocity = new Vector2(-force.x * GameController.instance.playerSpeed * Time.fixedDeltaTime, rb2d.velocity.y);
 
         _lastdirection = -force;
+    }
 
+    private void Tap()
+    {
+        tap = false;
+        CancelInvoke("CheckTap");
+        if (jumpCount > 2)
+        {
+            canJump = false;
+            return;
+        }
+        jump = true;
+        jumpCount += 1;
+    }
+
+    private void CheckTap()
+    {
+        if (_movementCurrentPosition == _movementStartPosition)
+        {
+            Tap();
+        }
+    }
+
+    private void _CheckTap()
+    {
+        if (tap)
+        {
+            if (_movementCurrentPosition != _movementStartPosition)
+            {
+                tap = false;
+            }
+        }
     }
 
     private void Jump()
     {
-
+        jump = false;
+        rb2d.velocity = new Vector2(rb2d.velocity.x, jumpVelocity);
     }
 
     private void BetterJump()
     {
+        if (rb2d.velocity.y > 0 && moving)
+        {
+            rb2d.gravityScale = lowJumpMultiplier;
+        }else
+        {
+            rb2d.gravityScale = fallMultiplier;
+        }
+    }
 
+    private void CheckGround()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.9f, groundLayer);
+        if (hit.collider != null)
+        {
+            canJump = true;
+            jumpCount = 0;
+        }
     }
 }

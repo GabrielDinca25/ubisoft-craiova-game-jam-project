@@ -6,7 +6,6 @@ public class PlayerZeroGMovement : MonoBehaviour
 {
     public bool moving;
     public bool jump;
-    //public bool tap;
 
     public Vector3 _movementStartPosition;
     public Vector3 _movementCurrentPosition;
@@ -17,11 +16,22 @@ public class PlayerZeroGMovement : MonoBehaviour
     private Rigidbody2D rb2d;
     public Vector3 force;
 
-    private float lastAngle = 0;
+    //private float minX =  0f;
+    //private float maxX = 10f;
+    //private float minY = -2f;
+    //private float maxY =  4f;
 
     private void Awake()
     {
         rb2d = GetComponent<Rigidbody2D>();
+
+        //float screenHeight = Screen.height;
+        //float screenWidth = Screen.width;
+
+        //minY *= screenHeight / 1080;
+        //maxY *= screenHeight / 1080;
+        //minX *= screenWidth / 1920;
+        //maxX *= screenWidth / 1920;
     }
 
     void Update()
@@ -35,11 +45,6 @@ public class PlayerZeroGMovement : MonoBehaviour
             EndMovement();
             return;
         }
-        //else if (Input.GetMouseButton(0))
-        //{
-        //    _CheckTap();
-        //    _CheckJump();
-        //}
         ClampPlayer();
     }
 
@@ -49,6 +54,7 @@ public class PlayerZeroGMovement : MonoBehaviour
         {
             Move();
         }
+        RotateToTarget();
     }
 
     private void ClampPlayer()
@@ -61,11 +67,9 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     private void StartMovement()
     {
-        //tap = true;
         Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
         _movementStartPosition = cam.ScreenToWorldPoint(mousePosition);
         _movementCurrentPosition = _movementStartPosition;
-        //Invoke("SetMoving", 0.1f);
         SetMoving();
     }
 
@@ -75,12 +79,8 @@ public class PlayerZeroGMovement : MonoBehaviour
         moving = false;
         rb2d.velocity = Vector3.zero;
 
-        Vector3 test = new Vector3(Random.Range(0f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
-        rb2d.velocity = test;
-        //if (tap)
-        //{
-        //    //just in case Dash();
-        //}
+        Vector3 pushForce = new Vector3(Random.Range(0f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
+        rb2d.velocity = pushForce;
     }
 
     private void SetMoving()
@@ -94,12 +94,10 @@ public class PlayerZeroGMovement : MonoBehaviour
         _movementCurrentPosition = cam.ScreenToWorldPoint(mousePosition);
 
 
-
         force = _movementStartPosition - _movementCurrentPosition;
         if (Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x)
         || Mathf.Abs(force.y) < Mathf.Abs(_lastdirection.y))
         {
-            Debug.Log("now");
             rb2d.velocity = Vector3.zero;
             _movementStartPosition = _movementCurrentPosition;
             force = _movementStartPosition - _movementCurrentPosition;
@@ -107,27 +105,28 @@ public class PlayerZeroGMovement : MonoBehaviour
 
         rb2d.velocity = -force * GameController.instance.playerSpeed * Time.fixedDeltaTime;
 
-        _goPosition = (Vector2) transform.position + (Vector2) force;
         _lastdirection = -force;
 
-        RotateToTarget();
     }
 
     public float rotationSteepSpeed;
     private void RotateToTarget()
     {
-        Debug.Log(lastAngle + "last angle");
-
+        //Debug.Log(lastAngle + "last angle");
+        _goPosition = (Vector2)transform.position + (Vector2)force;
 
         var dir = _goPosition - rb2d.position;
         var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 180;
 
-        Debug.Log("angle " + angle);
-        if (angle > 150 && angle < 210)
+        //Debug.Log("angle " + angle);
+        if (angle > 170 && angle < 190)
         {
             return;
         }
-        rb2d.rotation =  Mathf.LerpAngle(rb2d.rotation, angle, rotationSteepSpeed * Time.fixedDeltaTime);
-        lastAngle = angle;
+
+        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationSteepSpeed * Time.fixedDeltaTime);
+
+        //rb2d.rotation =  Mathf.LerpAngle(rb2d.rotation, angle, rotationSteepSpeed * Time.fixedDeltaTime);
     }
 }
