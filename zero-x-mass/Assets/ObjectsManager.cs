@@ -9,6 +9,7 @@ public class ObjectsManager : MonoBehaviour
     public float obstacleSpawnPositionX = 30;
     public float obstacleSpeed = 5;
     public float obstacleRespawnPositionX = 30;
+    public float obstacleRotationSpeed = 200f;
     public float enemyMovementSpeed = 5;
 
     [HideInInspector] public float lastobstacleSpeed;
@@ -36,7 +37,7 @@ public class ObjectsManager : MonoBehaviour
         for(int i = 0; i < 5; i++)
         {
             SpawnObstacle();
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(2f);
         }
     }
 

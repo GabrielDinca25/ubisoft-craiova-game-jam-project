@@ -1,14 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerZeroGMovement : MonoBehaviour
 {
+    public float playerSpeed = 2000f;
     public bool moving;
     public bool jump;
 
+
     public Vector3 _movementStartPosition;
     public Vector3 _movementCurrentPosition;
+    public Vector3 _movementLastPosition;
     public Vector3 _lastdirection;
     public Vector2 _goPosition;
 
@@ -21,6 +26,7 @@ public class PlayerZeroGMovement : MonoBehaviour
     private float minY = -4f;
     private float maxY = 4f;
 
+    public TMP_Text debugger;
     private void Awake()
     {
         rb2d = GetComponent<Rigidbody2D>();
@@ -32,6 +38,7 @@ public class PlayerZeroGMovement : MonoBehaviour
         maxY *= screenHeight / 1080;
         minX *= screenWidth / 1920;
         maxX *= screenWidth / 1920;
+        debugger.text = maxY + "";
     }
 
     void Update()
@@ -54,14 +61,14 @@ public class PlayerZeroGMovement : MonoBehaviour
         {
             Move();
         }
-        RotateToTarget();
+        //RotateToTarget();
     }
 
     private void ClampPlayer()
     {
         Vector3 pos = transform.position;
         pos.x = Mathf.Clamp(transform.position.x, minX, maxX);
-        pos.y = Mathf.Clamp(transform.position.y, minY, maxX);
+        pos.y = Mathf.Clamp(transform.position.y, minY, maxY);
         transform.position = pos;
     }
 
@@ -70,6 +77,7 @@ public class PlayerZeroGMovement : MonoBehaviour
         Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
         _movementStartPosition = cam.ScreenToWorldPoint(mousePosition);
         _movementCurrentPosition = _movementStartPosition;
+        _movementLastPosition = _movementCurrentPosition;
         SetMoving();
     }
 
@@ -90,22 +98,29 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     private void Move()
     {
+        //Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
+        //_movementCurrentPosition = cam.ScreenToWorldPoint(mousePosition);
+
+
+        //force = _movementStartPosition - _movementCurrentPosition;
+        //if (Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x)
+        //|| Mathf.Abs(force.y) < Mathf.Abs(_lastdirection.y))
+        //{
+        //    rb2d.velocity = Vector3.zero;
+        //    _movementStartPosition = _movementCurrentPosition;
+        //    force = _movementStartPosition - _movementCurrentPosition;
+        //}
+
         Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
         _movementCurrentPosition = cam.ScreenToWorldPoint(mousePosition);
 
+        force = _movementCurrentPosition - _movementLastPosition;
 
-        force = _movementStartPosition - _movementCurrentPosition;
-        if (Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x)
-        || Mathf.Abs(force.y) < Mathf.Abs(_lastdirection.y))
-        {
-            rb2d.velocity = Vector3.zero;
-            _movementStartPosition = _movementCurrentPosition;
-            force = _movementStartPosition - _movementCurrentPosition;
-        }
-
-        rb2d.velocity = -force * GameController.instance.playerSpeed * Time.fixedDeltaTime;
+        rb2d.velocity = force * playerSpeed * Time.fixedDeltaTime;
 
         _lastdirection = -force;
+
+        _movementLastPosition = _movementCurrentPosition;
 
     }
 
@@ -126,5 +141,13 @@ public class PlayerZeroGMovement : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationSteepSpeed * Time.fixedDeltaTime);
 
         //rb2d.rotation =  Mathf.LerpAngle(rb2d.rotation, angle, rotationSteepSpeed * Time.fixedDeltaTime);
+    }
+
+    public void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 }

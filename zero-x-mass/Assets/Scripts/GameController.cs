@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Animator playerAnim;
     [HideInInspector] public Rigidbody2D playerRb2d;
-    public float playerSpeed;
+
     public bool gravity;
 
 

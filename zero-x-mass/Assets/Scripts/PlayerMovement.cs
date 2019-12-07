@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -6,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     public bool moving;
     public bool jump;
     public bool tap;
+    public float playerSpeed = 200f;
 
     public Vector3 _movementStartPosition;
     public Vector3 _movementCurrentPosition;
@@ -22,6 +24,11 @@ public class PlayerMovement : MonoBehaviour
     public int jumpCount;
     public bool canJump;
 
+    private float minX = 0f;
+    private float maxX = 10f;
+    private float minY = -2f;
+    private float maxY = 4f;
+
     [Header("GroundCheck")]
     public LayerMask groundLayer;
     private void Awake()
@@ -29,6 +36,14 @@ public class PlayerMovement : MonoBehaviour
         rb2d = GetComponent<Rigidbody2D>();
         canJump = false;
         jumpCount = 0;
+
+        float screenHeight = Screen.height;
+        float screenWidth = Screen.width;
+
+        minY *= screenHeight / 1080;
+        maxY *= screenHeight / 1080;
+        minX *= screenWidth / 1920;
+        maxX *= screenWidth / 1920;
     }
 
     void Update()
@@ -65,8 +80,8 @@ public class PlayerMovement : MonoBehaviour
     private void ClampPlayer()
     {
         Vector3 pos = transform.position;
-        pos.x = Mathf.Clamp(transform.position.x, -5.0f, 6.0f);
-        pos.y = Mathf.Clamp(transform.position.y, -4.0f, 4.0f);
+        pos.x = Mathf.Clamp(transform.position.x, minX, maxX);
+        pos.y = Mathf.Clamp(transform.position.y, minY, maxY);
         transform.position = pos;
     }
 
@@ -86,9 +101,6 @@ public class PlayerMovement : MonoBehaviour
         moving = false;
         rb2d.velocity = new Vector2(0, rb2d.velocity.y);
     }
-
- 
-
     private void SetMoving()
     {
         moving = true;
@@ -102,12 +114,12 @@ public class PlayerMovement : MonoBehaviour
         Vector3 force = _movementStartPosition - _movementCurrentPosition;
         if (Mathf.Abs(force.x) < Mathf.Abs(_lastdirection.x))
         {
-            rb2d.velocity = Vector3.zero;
+            rb2d.velocity = new Vector2(0, rb2d.velocity.y);
             _movementStartPosition = _movementCurrentPosition;
             force = _movementStartPosition - _movementCurrentPosition;
         }
 
-        rb2d.velocity = new Vector2(-force.x * GameController.instance.playerSpeed * Time.fixedDeltaTime, rb2d.velocity.y);
+        rb2d.velocity = new Vector2(-force.x * playerSpeed * Time.fixedDeltaTime, rb2d.velocity.y);
 
         _lastdirection = -force;
     }
@@ -125,22 +137,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckTap()
     {
-        Debug.Log(_movementCurrentPosition + "current");
-        Debug.Log(_movementStartPosition + "start");
-        if (_movementCurrentPosition == _movementStartPosition)
+        float distance = Vector2.Distance(_movementStartPosition, _movementCurrentPosition);
+        if (distance < 0.1f)
         {
             Tap();
-        }
-    }
-
-    private void _CheckTap()
-    {
-        if (tap)
-        {
-            if (_movementCurrentPosition != _movementStartPosition)
-            {
-                tap = false;
-            }
         }
     }
 
@@ -164,11 +164,20 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckGround()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.85f, groundLayer);
+        //Debug.DrawRay(transform.position, Vector2.down * 1f, Color.green);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, groundLayer);
         if (hit.collider != null)
         {
             canJump = true;
             jumpCount = 0;
+        }
+    }
+
+    public void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 }
