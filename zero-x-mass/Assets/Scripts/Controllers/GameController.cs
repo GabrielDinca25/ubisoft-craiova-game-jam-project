@@ -131,6 +131,9 @@ public class GameController : MonoBehaviour
     public void AddBonus(string name, Vector3 position)
     {
         int bonus = Int32.Parse(name);
+        Debug.Log("bonus" + bonus);
+        Debug.Log("name" + name);
+        Debug.Log("name" + coins);
         coins    += bonus;
 
         bonusTextSpawner.SpawnText(name, position);
@@ -172,7 +175,7 @@ public class GameController : MonoBehaviour
         scoreText.text     = score + "";
         highScoreText.text = SettingsManager.instance.Highscore + "";
         coinsText.text     = coins +"";
-        SettingsManager.instance.Coins += coins;
+        SettingsManager.instance.Coins = coins;
 
         deathMenu.SetActive(true);
     }

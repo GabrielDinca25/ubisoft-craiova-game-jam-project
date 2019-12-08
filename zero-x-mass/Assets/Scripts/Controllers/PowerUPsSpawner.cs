@@ -13,9 +13,12 @@ public class PowerUPsSpawner : MonoBehaviour
 
     IEnumerator SpawnPowerUPs()
     {
+        int random = Random.Range(5, 6);
+        yield return new WaitForSeconds(random);
+
         while (!GameController.instance.gameOver)
         {
-            int random = Random.Range(10, 12);
+            random = Random.Range(10, 12);
             yield return new WaitForSeconds(random);
             SpawnPowerUPS();
         }

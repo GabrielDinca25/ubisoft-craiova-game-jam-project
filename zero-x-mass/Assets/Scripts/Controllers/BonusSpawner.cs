@@ -4,18 +4,31 @@ using UnityEngine;
 
 public class BonusSpawner : MonoBehaviour
 {
+    int min;
+    int max;
+
     private void Start()
     {
         StartCoroutine("SpawnBonuses");
+        min = 3;
+        max = 4;
     }
 
     IEnumerator SpawnBonuses()
     {
+        int count = 0;
         while (!GameController.instance.gameOver)
         {
-            int random = Random.Range(5, 7);
+            int random = Random.Range(min, max);
             yield return new WaitForSeconds(random);
             SpawnBonus();
+            count++;
+            if(count > 7)
+            {
+                ObjectsManager.instance.obstacleSpeed = 10;
+                max = 2;
+                min = 1;
+            }
         }
     }
 
